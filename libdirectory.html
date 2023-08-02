@@ -1,0 +1,101 @@
+<div class="row">
+<div class="small-12 columns medium-6 medium-offset-3 columns" style="margin-bottom: 2em; margin-top:-2em;">
+<div class="form-group"><label for="subjectFilter">Filter by course subject: </label> <select class="form-control" id="subjectFilter"><option value="all">All Subjects</option> <!-- Add all subjects dynamically here --> </select></div>
+</div>
+</div>
+
+<ul class="small-block-grid-1 medium-block-grid-2" id="contactCards"><!-- Contact cards will be dynamically generated here -->
+</ul>
+<script>
+// Generate Librarians
+const librarians = [
+   {
+    name: 'Dr. Logan Rath',
+    pronouns: 'he/him',
+    photo_url: 'https://libapps.s3.amazonaws.com/accounts/456/profiles/264/lr-libguides-2023.jpg',
+    profile_id: '456',
+    email: 'lrath@brockport.edu',
+    calendar_link: 'https://brockport.libcal.com/appointments/logan',
+    subjects: ['Counselor Education', 'Education', 'Educational Administration', 'Healthcare Studies', 'Higher Education Administration', 'Honors', 'Spanish', 'French', 'Foreign Cultures in English', 'Nursing', 'Psychology', 'Public Health & Health Education', 'Social Work', 'Women & Gender Studies', 'Zotero']
+  },
+];
+
+
+// Function to generate contact card HTML for a librarian
+function generateContactCardHTML(librarian) {
+  return `
+  <li>
+	<div class="row" data-equalizer-watch="">
+	<div class="columns small-4 text-center">
+	<p><img alt="${librarian.name}" height="160" src="${librarian.photo_url}" width="128" /></p>
+	</div>
+
+	<div class="columns small-8 text-left">
+	<h3><strong><a href="https://library.brockport.edu/prf.php?account_id=${librarian.profile_id}" target="_blank">${librarian.name}</a></strong> (${librarian.pronouns})</h3>
+
+	<p class="small" style="line-height:1em;">${librarian.subjects.join(', ')}</p>
+
+	<p class="small-5 columns"><a class="go" href="mailto:${librarian.email}">Email Me</a></p>
+
+	<p class="small-7 columns"><a class="go" href="${librarian.calendar_link}">Appointments</a></p>
+	</div>
+	</div>
+	</li>
+  `;
+}
+
+// Function to render contact cards based on the filtered librarians
+function renderContactCards(filteredLibrarians) {
+  const contactCardsDiv = document.getElementById('contactCards');
+  contactCardsDiv.innerHTML = ''
+  filteredLibrarians.forEach((librarian) => {
+    const contactCardHTML = generateContactCardHTML(librarian);
+    contactCardsDiv.insertAdjacentHTML('beforeend', contactCardHTML);
+  });
+}
+
+// Function to sanitize the subject value
+function sanitizeSubject(subject) {
+  return subject.replace(/[\s&]/g, '_').toLowerCase();
+}
+
+// Function to populate the subject filter dropdown
+function populateSubjectFilter() {
+  const subjectFilterDropdown = document.getElementById('subjectFilter');
+
+  const subjectsSet = new Set();
+  librarians.forEach((librarian) => {
+    librarian.subjects.forEach((subject) => {
+      subjectsSet.add(subject);
+    });
+  });
+
+  const subjectsArray = Array.from(subjectsSet).sort();
+
+  subjectsArray.forEach((subject) => {
+    const option = document.createElement('option');
+    option.value = sanitizeSubject(subject);
+    option.textContent = subject;
+    subjectFilterDropdown.appendChild(option);
+  });
+}
+
+// Function to handle subject filter change
+function handleSubjectFilterChange() {
+  const filterSubject = document.getElementById('subjectFilter').value;
+  const filteredLibrarians = filterSubject === 'all'
+    ? librarians
+    : librarians.filter(librarian =>
+        librarian.subjects.some(subject => sanitizeSubject(subject) === filterSubject)
+      );
+
+  renderContactCards(filteredLibrarians);
+}
+
+// Initialize the page
+populateSubjectFilter();
+renderContactCards(librarians);
+
+// Event listener for the subject filter change
+document.getElementById('subjectFilter').addEventListener('change', handleSubjectFilterChange);
+</script>
